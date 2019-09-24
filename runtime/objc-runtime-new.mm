@@ -578,6 +578,7 @@ attachCategories(Class cls, category_list *cats, bool flush_caches)
     bool isMeta = cls->isMetaClass();
 
     // fixme rearrange to remove these intermediate allocations
+    // 方法、属性、协议【二位数组】
     method_list_t **mlists = (method_list_t **)
         malloc(cats->count * sizeof(*mlists));
     property_list_t **proplists = (property_list_t **)
@@ -591,7 +592,7 @@ attachCategories(Class cls, category_list *cats, bool flush_caches)
     int protocount = 0;
     int i = cats->count;
     bool fromBundle = NO;
-    while (i--) {
+    while (i--) { // 倒序遍历，所以最后编译的分类会最先访问。
         auto& entry = cats->list[i];
 
         method_list_t *mlist = entry.cat->methodsForMeta(isMeta);
@@ -614,6 +615,7 @@ attachCategories(Class cls, category_list *cats, bool flush_caches)
     auto rw = cls->data();
 
     prepareMethodLists(cls, mlists, mcount, NO, fromBundle);
+    // 把 category 中的 method、property、protocol attach 到原类中
     rw->methods.attachLists(mlists, mcount);
     free(mlists);
     if (flush_caches  &&  mcount > 0) flushCaches(cls);
@@ -671,6 +673,7 @@ static void methodizeClass(Class cls)
     }
 
     // Attach categories.
+    // 关联分类
     category_list *cats = unattachedCategoriesForClass(cls, true /*realizing*/);
     attachCategories(cls, cats, false /*don't flush caches*/);
 

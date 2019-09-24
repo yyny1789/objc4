@@ -668,18 +668,33 @@ class list_array_tt {
             return &list;
         }
     }
-
+    
+    // 假设 addedLists 为
+    // [[method_t, method_t], [method_t], [method_t]]
+    // A                        B              C
+    // addedCount 为 3
     void attachLists(List* const * addedLists, uint32_t addedCount) {
         if (addedCount == 0) return;
 
         if (hasArray()) {
             // many lists -> many lists
+            // 原有元素总数 2
             uint32_t oldCount = array()->count;
+            // 拼接后的元素总数为 5
             uint32_t newCount = oldCount + addedCount;
+            // 根据 newCount 重新分配内存
             setArray((array_t *)realloc(array(), array_t::byteSize(newCount)));
+            // 设置 元素 总数
             array()->count = newCount;
+            
+            // 内存移动
+            // [[], [], [], [原来的第一个元素], [原来的第二个元素]]
             memmove(array()->lists + addedCount, array()->lists, 
                     oldCount * sizeof(array()->lists[0]));
+            
+            // 内存拷贝
+            // [A, B, C, [原来的第一个元素], [原来的第二个元素]]
+            // 这也是分类方法为什么会“覆盖”原类方法。
             memcpy(array()->lists, addedLists, 
                    addedCount * sizeof(array()->lists[0]));
         }
